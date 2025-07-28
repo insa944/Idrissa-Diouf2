@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Mèmes - Créez vos mèmes facilement</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .editor-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: linear-gradient(135deg, #f8f9ff, #e8eeff);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #ff6b6b;
+            background: linear-gradient(135deg, #fff5f5, #ffebeb);
+            transform: translateY(-2px);
+        }
+
+        .upload-area.dragover {
+            border-color: #4ecdc4;
+            background: linear-gradient(135deg, #f0fffe, #e0fffc);
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .canvas-container {
+            position: relative;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #memeCanvas {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .controls-panel {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            color: #555;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .color-input {
+            height: 50px !important;
+            border: none !important;
+            cursor: pointer;
+        }
+
+        .range-input {
+            appearance: none;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            height: 8px;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .range-input::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .gallery {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .gallery h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 2em;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .gallery-item {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .gallery-item .date {
+            color: #666;
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        .text-position {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .preset-templates {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .template-btn {
+            padding: 10px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .template-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-style: italic;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                text-align: center;
+            }
+        }
+
+        .emoji {
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><span class="emoji">🎨</span> Générateur de Mèmes</h1>
+            <p>Créez des mèmes hilarants en quelques clics !</p>
+        </div>
+
+        <div class="main-content">
+            <div class="editor-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📸</div>
+                    <h3>Glissez votre image ici ou cliquez pour sélectionner</h3>
+                    <p>Formats supportés: JPG, PNG, GIF</p>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                </div>
+
+                <div class="preset-templates">
+                    <div class="template-btn" onclick="loadTemplate('drake')">Drake Meme</div>
+                    <div class="template-btn" onclick="loadTemplate('distracted')">Boyfriend</div>
+                    <div class="template-btn" onclick="loadTemplate('woman')">Woman Yelling</div>
+                    <div class="template-btn" onclick="loadTemplate('success')">Success Kid</div>
+                </div>
+
+                <div class="canvas-container">
+                    <canvas id="memeCanvas" width="800" height="600"></canvas>
+                    <div class="loading" id="loading">Chargement de l'image...</div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-success" onclick="downloadMeme()">
+                        <span class="emoji">💾</span> Télécharger
+                    </button>
+                    <button class="btn" onclick="saveMeme()">
+                        <span class="emoji">💫</span> Sauvegarder
+                    </button>
+                    <button class="btn btn-danger" onclick="clearCanvas()">
+                        <span class="emoji">🗑️</span> Effacer
+                    </button>
+                    <button class="btn" onclick="shareOnSocial()">
+                        <span class="emoji">📱</span> Partager
+                    </button>
+                </div>
+            </div>
+
+            <div class="controls-panel">
+                <div class="control-group">
+                    <h3><span class="emoji">✏️</span> Texte Principal</h3>
+                    <div class="input-group">
+                        <label>Texte du haut</label>
+                        <input type="text" id="topText" placeholder="Entrez le texte du haut" oninput="updateMeme()">
+                    </div>
+                    <div class="input-group">
+                        <label>Texte du bas</label>
+                        <input type="text" id="bottomText" placeholder="Entrez le texte du bas" oninput="updateMeme()">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3><span class="emoji">🎨</span> Style du Texte</h3>
+                    <div class="input-group">
+                        <label>Police</label>
+                        <select id="fontFamily" onchange="updateMeme()">
+                            <option value="Impact">Impact</option>
+                            <option value="Arial Black">Arial Black</option>
+                            <option value="Helvetica">Helvetica</option>
+                            <option value="Comic Sans MS">Comic Sans MS</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Taille: <span id="fontSizeValue">40</span>px</label>
+                        <input type="range" id="fontSize" min="20" max="80" value="40" class="range-input" oninput="updateFontSize(this.value)">
+                    </div>
+                    <div class="input-group">
+                        <label>Couleur du texte</label>
+                        <input type="color" id="textColor" value="#ffffff" class="color-input" onchange="updateMeme()">
+                    </div>
+                    <div class="input-group">
+                        <label>Couleur du contour</label>
+                        <input type="color" id="strokeColor" value="#000000" class="color-input" onchange="updateMeme()">
+                    </div>
+                    <div class="input-group">
+                        <label>Épaisseur contour: <span id="strokeWidthValue">3</span>px</label>
+                        <input type="range" id="strokeWidth" min="0" max="10" value="3" class="range-input" oninput="updateStrokeWidth(this.value)">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3><span class="emoji">📍</span> Position</h3>
+                    <div class="text-position">
+                        <div class="input-group">
+                            <label>Position Y haut: <span id="topYValue">15</span>%</label>
+                            <input type="range" id="topTextY" min="5" max="40" value="15" class="range-input" oninput="updateTopY(this.value)">
+                        </div>
+                        <div class="input-group">
+                            <label>Position Y bas: <span id="bottomYValue">85</span>%</label>
+                            <input type="range" id="bottomTextY" min="60" max="95" value="85" class="range-input" oninput="updateBottomY(this.value)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="gallery">
+            <h2><span class="emoji">🖼️</span> Ma Galerie de Mèmes</h2>
+            <div class="gallery-grid" id="galleryGrid">
+                <!-- Les mèmes sauvegardés apparaîtront ici -->
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        let canvas, ctx;
+        let currentImage = null;
+        let savedMemes = [];
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            canvas = document.getElementById('memeCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Charger les mèmes sauvegardés
+            loadSavedMemes();
+            
+            // Configuration des événements
+            setupEventListeners();
+            
+            // Dessiner le canvas initial
+            drawCanvas();
+        });
+
+        function setupEventListeners() {
+            const uploadArea = document.getElementById('uploadArea');
+            const imageInput = document.getElementById('imageInput');
+
+            // Upload par clic
+            uploadArea.addEventListener('click', () => imageInput.click());
+            
+            // Upload par drag & drop
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleImageUpload(files[0]);
+                }
+            });
+
+            imageInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleImageUpload(e.target.files[0]);
+                }
+            });
+        }
+
+        function handleImageUpload(file) {
+            if (!file.type.startsWith('image/')) {
+                showNotification('Veuillez sélectionner un fichier image valide', 'error');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    currentImage = img;
+                    resizeCanvas(img);
+                    updateMeme();
+                    loading.style.display = 'none';
+                    showNotification('Image chargée avec succès !', 'success');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function resizeCanvas(img) {
+            const maxWidth = 800;
+            const maxHeight = 600;
+            let { width, height } = img;
+
+            if (width > maxWidth) {
+                height = (height * maxWidth) / width;
+                width = maxWidth;
+            }
+            if (height > maxHeight) {
+                width = (width * maxHeight) / height;
+                height = maxHeight;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+        }
+
+        function drawCanvas() {
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Message par défaut
+            ctx.fillStyle = '#6c757d';
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Téléchargez une image pour commencer', canvas.width/2, canvas.height/2);
+        }
+
+        function updateMeme() {
+            if (!currentImage) {
+                drawCanvas();
+                return;
+            }
+
+            // Effacer le canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dessiner l'image
+            ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
+            
+            // Configuration du texte
+            const fontSize = document.getElementById('fontSize').value;
+            const fontFamily = document.getElementById('fontFamily').value;
+            const textColor = document.getElementById('textColor').value;
+            const strokeColor = document.getElementById('strokeColor').value;
+            const strokeWidth = document.getElementById('strokeWidth').value;
+            
+            ctx.font = `bold ${fontSize}px ${fontFamily}`;
+            ctx.fillStyle = textColor;
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = strokeWidth;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Texte du haut
+            const topText = document.getElementById('topText').value.toUpperCase();
+            const topY = (document.getElementById('topTextY').value / 100) * canvas.height;
+            if (topText) {
+                drawText(topText, canvas.width / 2, topY);
+            }
+
+            // Texte du bas
+            const bottomText = document.getElementById('bottomText').value.toUpperCase();
+            const bottomY = (document.getElementById('bottomTextY').value / 100) * canvas.height;
+            if (bottomText) {
+                drawText(bottomText, canvas.width / 2, bottomY);
+            }
+        }
+
+        function drawText(text, x, y) {
+            // Diviser le texte en lignes si nécessaire
+            const words = text.split(' ');
+            const maxWidth = canvas.width * 0.9;
+            let lines = [];
+            let currentLine = words[0];
+
+            for (let i = 1; i < words.length; i++) {
+                const word = words[i];
+                const width = ctx.measureText(currentLine + " " + word).width;
+                if (width < maxWidth) {
+                    currentLine += " " + word;
+                } else {
+                    lines.push(currentLine);
+                    currentLine = word;
+                }
+            }
+            lines.push(currentLine);
+
+            // Dessiner chaque ligne
+            const lineHeight = parseInt(document.getElementById('fontSize').value) * 1.2;
+            const startY = y - (lines.length - 1) * lineHeight / 2;
+
+            lines.forEach((line, index) => {
+                const lineY = startY + index * lineHeight;
+                
+                // Contour
+                if (document.getElementById('strokeWidth').value > 0) {
+                    ctx.strokeText(line, x, lineY);
+                }
+                
+                // Texte
+                ctx.fillText(line, x, lineY);
+            });
+        }
+
+        function updateFontSize(value) {
+            document.getElementById('fontSizeValue').textContent = value;
+            updateMeme();
+        }
+
+        function updateStrokeWidth(value) {
+            document.getElementById('strokeWidthValue').textContent = value;
+            updateMeme();
+        }
+
+        function updateTopY(value) {
+            document.getElementById('topYValue').textContent = value;
+            updateMeme();
+        }
+
+        function updateBottomY(value) {
+            document.getElementById('bottomYValue').textContent = value;
+            updateMeme();
+        }
+
+        function downloadMeme() {
+            if (!currentImage) {
+                showNotification('Veuillez d\'abord charger une image', 'error');
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.download = `meme_${Date.now()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+            
+            showNotification('Mème téléchargé avec succès !', 'success');
+        }
+
+        function saveMeme() {
+            if (!currentImage) {
+                showNotification('Veuillez d\'abord créer un mème', 'error');
+                return;
+            }
+
+            const memeData = {
+                id: Date.now(),
+                imageData: canvas.toDataURL(),
+                topText: document.getElementById('topText').value,
+                bottomText: document.getElementById('bottomText').value,
+                date: new Date().toLocaleDateString('fr-FR')
+            };
+
+            savedMemes.push(memeData);
+            updateGallery();
+            showNotification('Mème sauvegardé dans la galerie !', 'success');
+        }
+
+        function clearCanvas() {
+            currentImage = null;
+            document.getElementById('topText').value = '';
+            document.getElementById('bottomText').value = '';
+            drawCanvas();
+            showNotification('Canvas effacé', 'info');
+        }
+
+        function shareOnSocial() {
+            if (!currentImage) {
+                showNotification('Veuillez d\'abord créer un mème', 'error');
+                return;
+            }
+
+            // Simuler le partage (dans un vrai projet, intégrer les APIs des réseaux sociaux)
+            canvas.toBlob(blob => {
+                if (navigator.share && navigator.canShare({ files: [new File([blob], 'meme.png', { type: 'image/png' })] })) {
+                    navigator.share({
+                        files: [new File([blob], 'meme.png', { type: 'image/png' })],
+                        title: 'Mon mème génial !',
+                        text: 'Regardez ce mème que j\'ai créé !'
+                    });
+                } else {
+                    // Fallback : copier l'URL
+                    const url = canvas.toDataURL();
+                    navigator.clipboard.writeText(url).then(() => {
+                        showNotification('Image copiée dans le presse-papiers !', 'success');
+                    }).catch(() => {
+                        showNotification('Partage non supporté sur ce navigateur', 'error');
+                    });
+                }
+            });
+        }
+
+        function loadTemplate(templateName) {
+            // Templates prédéfinis (vous pouvez ajouter de vraies images)
+            const templates = {
+                drake: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjZjBmMGYwIi8+CiAgICA8dGV4dCB4PSIyMDAiIHk9IjIwMCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzMzMzMzMyIgdGV4dC1hbmNob3I9Im1pZGRsZSI+RHJha2UgVGVtcGxhdGU8L3RleHQ+Cjwvc3ZnPg==',
+                distracted: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjZTBlMGUwIi8+CiAgICA8dGV4dCB4PSIyMDAiIHk9IjIwMCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzMzMzMyIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Qm95ZnJpZW5kIFRlbXBsYXRlPC90ZXh0Pgo8L3N2Zz4=',
+                woman: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjZmZmMGYwIi8+CiAgICA8dGV4dCB4PSIyMDAiIHk9IjIwMCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzMzMzMyIgdGV4dC1hbmNob3I9Im1pZGRsZSI+V29tYW4gWWVsbGluZyBUZW1wbGF0ZTwvdGV4dD4KPC9zdmc+',
+                success: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjZjBmZmYwIi8+CiAgICA8dGV4dCB4PSIyMDAiIHk9IjIwMCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzMzMzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+U3VjY2VzcyBLaWQgVGVtcGxhdGU8L3RleHQ+Cjwvc3ZnPg=='
+            };
+
+            if (templates[templateName]) {
+                const img = new Image();
+                img.onload = function() {
+                    currentImage = img;
+                    resizeCanvas(img);
+                    updateMeme();
+                    showNotification(`Template ${templateName} chargé !`, 'success');
+                };
+                img.src = templates[templateName];
+            }
+        }
+
+        function updateGallery() {
+            const galleryGrid = document.getElementById('galleryGrid');
+            galleryGrid.innerHTML = '';
+
+            if (savedMemes.length === 0) {
+                galleryGrid.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1 / -1;">Aucun mème sauvegardé pour le moment.</p>';
+                return;
+            }
+
+            savedMemes.reverse().forEach(meme => {
+                const galleryItem = document.createElement('div');
+                galleryItem.className = 'gallery-item';
+                galleryItem.innerHTML = `
+                    <img src="${meme.imageData}" alt="Mème sauvegardé" onclick="loadFromGallery(${meme.id})">
+                    <div class="date">${meme.date}</div>
+                    <div style="text-align: center; margin-top: 10px;">
+                        <button class="btn" style="padding: 5px 10px; font-size: 12px; margin-right: 5px;" onclick="loadFromGallery(${meme.id})">
+                            📝 Éditer
+                        </button>
+                        <button class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="deleteMeme(${meme.id})">
+                            🗑️ Supprimer
+                        </button>
+                    </div>
+                `;
+                galleryGrid.appendChild(galleryItem);
+            });
+        }
+
+        function loadFromGallery(memeId) {
+            const meme = savedMemes.find(m => m.id === memeId);
+            if (meme) {
+                const img = new Image();
+                img.onload = function() {
+                    currentImage = img;
+                    resizeCanvas(img);
+                    
+                    // Restaurer le texte
+                    document.getElementById('topText').value = meme.topText || '';
+                    document.getElementById('bottomText').value = meme.bottomText || '';
+                    
+                    updateMeme();
+                    showNotification('Mème chargé depuis la galerie !', 'success');
+                    
+                    // Faire défiler vers l'éditeur
+                    document.querySelector('.editor-section').scrollIntoView({ behavior: 'smooth' });
+                };
+                img.src = meme.imageData;
+            }
+        }
+
+        function deleteMeme(memeId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce mème ?')) {
+                savedMemes = savedMemes.filter(m => m.id !== memeId);
+                updateGallery();
+                showNotification('Mème supprimé de la galerie', 'info');
+            }
+        }
+
+        function loadSavedMemes() {
+            // Simuler quelques mèmes exemple pour la démonstration
+            savedMemes = [
+                {
+                    id: 1,
+                    imageData: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjNDI4NWY0Ii8+CiAgICA8dGV4dCB4PSIyMDAiIHk9IjE1MCIgZm9udC1zaXplPSIyNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk1vbiBwcmVtaWVyIG3DqG1lICE8L3RleHQ+Cjwvc3ZnPg==',
+                    topText: 'QUAND TU FINIS ENFIN',
+                    bottomText: 'TON PROJET',
+                    date: new Date().toLocaleDateString('fr-FR')
+                }
+            ];
+            updateGallery();
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            
+            // Couleurs selon le type
+            const colors = {
+                success: 'linear-gradient(135deg, #4ecdc4, #44a08d)',
+                error: 'linear-gradient(135deg, #ff6b6b, #ee5a52)',
+                info: 'linear-gradient(135deg, #667eea, #764ba2)'
+            };
+            
+            notification.style.background = colors[type] || colors.info;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Raccourcis clavier
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 's':
+                        e.preventDefault();
+                        saveMeme();
+                        break;
+                    case 'd':
+                        e.preventDefault();
+                        downloadMeme();
+                        break;
+                    case 'Delete':
+                        e.preventDefault();
+                        clearCanvas();
+                        break;
+                }
+            }
+        });
+
+        // Auto-sauvegarde du texte
+        let autoSaveTimeout;
+        function autoSave() {
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(() => {
+                if (currentImage && (document.getElementById('topText').value || document.getElementById('bottomText').value)) {
+                    // Sauvegarder automatiquement en tant que brouillon
+                    console.log('Auto-sauvegarde du brouillon...');
+                }
+            }, 2000);
+        }
+
+        // Ajouter l'auto-sauvegarde aux champs de texte
+        document.getElementById('topText').addEventListener('input', autoSave);
+        document.getElementById('bottomText').addEventListener('input', autoSave);
+    </script>
+</body>
+</html>
